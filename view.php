@@ -132,27 +132,33 @@ if (empty($action)) { // Not displaying PDF
 
     $link = new moodle_url('/mod/certificate/view.php?id='.$cm->id.'&action=get');
     $button = new single_button($link, $linkname);
+    $button->add_action(new nodoubleclick_action('click'));
     $button->add_action(new popup_action('click', $link, 'view'.$cm->id, array('height' => 600, 'width' => 800)));
 
     echo html_writer::tag('div', $OUTPUT->render($button), array('style' => 'text-align:center'));
     echo $OUTPUT->footer($course);
     exit;
 } else { // Output to pdf
-    // Remove full-stop at the end if it exists, to avoid "..pdf" being created and being filtered by clean_filename
-    $certname = rtrim($certificate->name, '.');
-    $filename = clean_filename("$certname.pdf");
-    if ($certificate->savecert == 1) {
-        // PDF contents are now in $file_contents as a string
-       $file_contents = $pdf->Output('', 'S');
-       certificate_save_pdf($file_contents, $certrecord->id, $filename, $context->id);
-    }
-    if ($certificate->delivery == 0) {
-        $pdf->Output($filename, 'I'); // open in browser
-    } elseif ($certificate->delivery == 1) {
-        $pdf->Output($filename, 'D'); // force download when create
-    } elseif ($certificate->delivery == 2) {
-        certificate_email_student($course, $certificate, $certrecord, $context);
-        $pdf->Output($filename, 'I'); // open in browser
-        $pdf->Output('', 'S'); // send
+    if ($certificate->certificatetype == 'smsweb') {
+        header("Location: $redirecturl");
+        echo $certhtml;
+    } else {
+            // Remove full-stop at the end if it exists, to avoid "..pdf" being created and being filtered by clean_filename
+        $certname = rtrim($certificate->name, '.');
+        $filename = clean_filename("$certname.pdf");
+        if ($certificate->savecert == 1) {
+            // PDF contents are now in $file_contents as a string
+           $file_contents = $pdf->Output('', 'S');
+           certificate_save_pdf($file_contents, $certrecord->id, $filename, $context->id);
+        }
+        if ($certificate->delivery == 0) {
+            $pdf->Output($filename, 'I'); // open in browser
+        } elseif ($certificate->delivery == 1) {
+            $pdf->Output($filename, 'D'); // force download when create
+        } elseif ($certificate->delivery == 2) {
+            certificate_email_student($course, $certificate, $certrecord, $context);
+            $pdf->Output($filename, 'I'); // open in browser
+            $pdf->Output('', 'S'); // send
+        }
     }
 }
