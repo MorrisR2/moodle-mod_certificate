@@ -59,6 +59,7 @@ $PAGE->set_heading($course->fullname);
 $event = \mod_certificate\event\course_module_instance_list_viewed::create(array(
     'context' => context_course::instance($course->id)
 ));
+$event->add_record_snapshot('course', $course);
 $event->trigger();
 
 // Get the certificates, if there are none display a notice

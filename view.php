@@ -48,11 +48,11 @@ $context = context_module::instance($cm->id);
 require_capability('mod/certificate:view', $context);
 
 $event = \mod_certificate\event\course_module_viewed::create(array(
-    'objectid' => $cm->instance,
-    'context' => $PAGE->context,
+    'objectid' => $certificate->id,
+    'context' => $context,
 ));
 $event->add_record_snapshot('course', $course);
-$event->add_record_snapshot($cm->modname, $certificate);
+$event->add_record_snapshot('certificate', $certificate);
 $event->trigger();
 
 $completion=new completion_info($course);

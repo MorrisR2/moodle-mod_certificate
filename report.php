@@ -96,14 +96,6 @@ if (!$download) {
     $page = $perpage = 0;
 }
 
-$event = \mod_certificate\event\course_module_viewed::create(array(
-    'objectid' => $cm->instance,
-    'context' => $context,
-));
-$event->add_record_snapshot('course', $course);
-$event->add_record_snapshot($cm->modname, $certificate);
-$event->trigger();
-
 // Ensure there are issues to display, if not display notice
 if (!$users = certificate_get_issues($certificate->id, $DB->sql_fullname(), $groupmode, $cm, $page, $perpage)) {
     echo $OUTPUT->header();
