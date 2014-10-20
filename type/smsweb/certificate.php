@@ -11,6 +11,14 @@ $key = 'R@ch31r@y!';
  $baseurl = 'https://testsmsweb.teex.tamus.edu/OnlinePrintCertificate.aspx';
 // $baseurl = 'https://smsweb.teex.tamus.edu/OnlinePrintCertificate.aspx';
 
+// Disable the button for 4 seconds after clicking, to avoid clicking twice
+$PAGE->requires->js("/mod/certificate/type/smsweb/nodblclick.js");
+class nodoubleclick_action extends component_action {
+     public function __construct($event, $callback = null) {
+         parent::__construct('click', 'noDblClick', array());
+    }
+}
+
 $group = get_group($course->id, $USER->id);
 $time = time();
 // $pk = strtoupper(hash_hmac('sha256',$USER->idnumber . $time, $key));
