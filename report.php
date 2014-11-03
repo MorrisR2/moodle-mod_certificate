@@ -18,14 +18,13 @@
 /**
  * Handles viewing the report
  *
- * @package    mod
- * @subpackage certificate
+ * @package    mod_certificate
  * @copyright  Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../../config.php');
-require_once('lib.php');
+require_once('locallib.php');
 
 $id   = required_param('id', PARAM_INT); // Course module ID
 $sort = optional_param('sort', '', PARAM_RAW);
@@ -67,7 +66,7 @@ if (!$certificate = $DB->get_record('certificate', array('id'=> $cm->instance)))
 }
 
 // Requires a course login
-require_course_login($course->id, false, $cm);
+require_login($course, false, $cm);
 
 // Check capabilities
 $context = context_module::instance($cm->id);
@@ -109,7 +108,7 @@ if ($download == "ods") {
     require_once("$CFG->libdir/odslib.class.php");
 
     // Calculate file name
-    $filename = clean_filename("$course->shortname " . rtrim($certificate->name, '.') . '.ods');
+    $filename = certificate_get_certificate_filename($certificate, $cm, $course) . '.ods';
     // Creating a workbook
     $workbook = new MoodleODSWorkbook("-");
     // Send HTTP headers
@@ -158,7 +157,7 @@ if ($download == "xls") {
     require_once("$CFG->libdir/excellib.class.php");
 
     // Calculate file name
-    $filename = clean_filename("$course->shortname " . rtrim($certificate->name, '.') . '.xls');
+    $filename = certificate_get_certificate_filename($certificate, $cm, $course) . '.xls';
     // Creating a workbook
     $workbook = new MoodleExcelWorkbook("-");
     // Send HTTP headers
@@ -204,7 +203,7 @@ if ($download == "xls") {
 }
 
 if ($download == "txt") {
-    $filename = clean_filename("$course->shortname " . rtrim($certificate->name, '.') . '.txt');
+    $filename = certificate_get_certificate_filename($certificate, $cm, $course) . '.txt';
 
     header("Content-Type: application/download\n");
     header("Content-Disposition: attachment; filename=\"$filename\"");

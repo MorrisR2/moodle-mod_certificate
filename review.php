@@ -18,14 +18,13 @@
 /**
  * This page reviews a certificate
  *
- * @package    mod
- * @subpackage certificate
+ * @package    mod_certificate
  * @copyright  Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../../config.php');
-require_once('lib.php');
+require_once('locallib.php');
 require_once("$CFG->libdir/pdflib.php");
 
 // Retrieve any variables that are passed
@@ -45,7 +44,7 @@ if (!$certificate = $DB->get_record('certificate', array('id'=> $cm->instance)))
 }
 
 // Requires a course login
-require_course_login($course->id, true, $cm);
+require_login($course, true, $cm);
 
 // Check the capabilities
 $context = context_module::instance($cm->id);
@@ -68,10 +67,10 @@ if (!$certrecord = $DB->get_record('certificate_issues', array('userid' => $USER
 require ("$CFG->dirroot/mod/certificate/type/$certificate->certificatetype/certificate.php");
 
 if ($action) {
-    // Remove full-stop at the end if it exists, to avoid "..pdf" being created and being filtered by clean_filename
-    $certname = rtrim($certificate->name, '.');
-    $filename = clean_filename("$certname.pdf");
-    $pdf->Output($filename, 'I'); // open in browser
+    $filename = certificate_get_certificate_filename($certificate, $cm, $course) . '.pdf';
+    $filecontents = $pdf->Output('', 'S');
+    // Open in browser.
+    send_file($filecontents, $filename, 0, 0, true, false, 'application/pdf');
     exit();
 }
 

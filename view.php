@@ -18,15 +18,14 @@
 /**
  * Handles viewing a certificate
  *
- * @package    mod
- * @subpackage certificate
+ * @package    mod_certificate
  * @copyright  Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once("../../config.php");
+require_once("$CFG->dirroot/mod/certificate/locallib.php");
 require_once("$CFG->dirroot/mod/certificate/deprecatedlib.php");
-require_once("$CFG->dirroot/mod/certificate/lib.php");
 require_once("$CFG->libdir/pdflib.php");
 
 $id = required_param('id', PARAM_INT);    // Course Module ID
@@ -43,7 +42,7 @@ if (!$certificate = $DB->get_record('certificate', array('id'=> $cm->instance)))
     print_error('course module is incorrect');
 }
 
-require_login($course->id, false, $cm);
+require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/certificate:view', $context);
 
@@ -64,9 +63,6 @@ $PAGE->set_context($context);
 $PAGE->set_cm($cm);
 $PAGE->set_title(format_string($certificate->name));
 $PAGE->set_heading(format_string($course->fullname));
-
-// Set the context
-$context = context_module::instance($cm->id);
 
 if (($edit != -1) and $PAGE->user_allowed_editing()) {
      $USER->editing = $edit;
@@ -134,6 +130,9 @@ if (empty($action)) { // Not displaying PDF
     $button = new single_button($link, $linkname);
     $button->add_action(new nodoubleclick_action('click'));
     $button->add_action(new popup_action('click', $link, 'view'.$cm->id, array('height' => 600, 'width' => 800)));
+    if ($certificate->delivery != 1) {
+        $button->add_action(new popup_action('click', $link, 'view' . $cm->id, array('height' => 600, 'width' => 800)));
+    }
 
     echo html_writer::tag('div', $OUTPUT->render($button), array('style' => 'text-align:center'));
     echo $OUTPUT->footer($course);
@@ -160,5 +159,30 @@ if (empty($action)) { // Not displaying PDF
             $pdf->Output($filename, 'I'); // open in browser
             $pdf->Output('', 'S'); // send
         }
+
+    // No debugging here, sorry.
+    $CFG->debugdisplay = 0;
+    @ini_set('display_errors', '0');
+    @ini_set('log_errors', '1');
+
+    $filename = certificate_get_certificate_filename($certificate, $cm, $course) . '.pdf';
+
+    // PDF contents are now in $file_contents as a string.
+    $filecontents = $pdf->Output('', 'S');
+
+    if ($certificate->savecert == 1) {
+        certificate_save_pdf($filecontents, $certrecord->id, $filename, $context->id);
+    }
+
+    if ($certificate->delivery == 0) {
+        // Open in browser.
+        send_file($filecontents, $filename, 0, 0, true, false, 'application/pdf');
+    } elseif ($certificate->delivery == 1) {
+        // Force download.
+        send_file($filecontents, $filename, 0, 0, true, true, 'application/pdf');
+    } elseif ($certificate->delivery == 2) {
+        certificate_email_student($course, $certificate, $certrecord, $context, $filecontents, $filename);
+        // Open in browser after sending email.
+        send_file($filecontents, $filename, 0, 0, true, false, 'application/pdf');
     }
 }

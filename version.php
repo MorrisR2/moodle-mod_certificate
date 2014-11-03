@@ -18,13 +18,14 @@
 /**
  * Code fragment to define the version of the certificate module
  *
- * @package    mod
- * @subpackage certificate
+ * @package    mod_certificate
  * @copyright  Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  */
 
-$plugin->version   = 2014081900; // The current module version (Date: YYYYMMDDXX)
+defined('MOODLE_INTERNAL') || die();
+
+$plugin->version   = 2014081901; // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2014051200; // Requires this Moodle version
 $plugin->cron      = 0; // Period for cron to check this module (secs)
 $plugin->component = 'mod_certificate';
