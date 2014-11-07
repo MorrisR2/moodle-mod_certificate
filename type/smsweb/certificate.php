@@ -21,12 +21,14 @@ class nodoubleclick_action extends component_action {
 
 $group = get_group($course->id, $USER->id);
 $time = time();
-// $pk = strtoupper(hash_hmac('sha256',$USER->idnumber . $time, $key));
+
+preg_match('/^(..)([^\-]*)-?(.*)$/', $course->idnumber, $parts);
+list ($div, $coursenumber, $extra) = array ($parts[1], $parts[2], $parts[3]);
 $params = array(
                   'R'  => 'TeexLMS',
-                  'D'  => substr($course->idnumber, 0, 2),
+                  'D'  => $div,
                   'V'  => $USER->idnumber,
-                  'C'  => substr($course->idnumber, 2),
+                  'C'  => $coursenumber,
                   'S'  => $group,
                   'T' => $time
                   );
